@@ -3,6 +3,7 @@
 import argparse
 import pathlib
 import uuid
+import re
 
 import langdetect
 from ebooklib import epub
@@ -14,15 +15,33 @@ class Txt2Epub:
         book_identifier=None,
         book_title=None,
         book_author=None,
+        book_delineator = None,
         book_language="en",
     ):
         self.book_identifier = book_identifier or str(uuid.uuid4())
         self.book_title = book_title
         self.book_author = book_author
         self.book_language = book_language
+        self.book_delineator = book_delineator
+
+#
+    def is_digit_1_to_9(s):
+        pattern = r'^[1-9]$'
+        return re.match(pattern, s) is not None
+    
+    def split(self, input_file: pathlib.Path, chapters):
+        s = self.book_delineator
+        valid_characters = {"一", "二", "三", "四", "五", "六", "七", "八", "九", "十"}
+        with input_file.open("r", encoding="utf-8") as txt_file:
+            text = txt_file.read()
+            for line in text:
+                chapters = text.split("/n"+line+"/n")
+                '''if .is_space_separated(s)==True and len(line)>=2 and self.book_delineator(0) == line[0] and line[1] in valid_characters or self.is_digit_1_to_9(line[0]):'''
+                
+
 
     def create_epub(self, input_file: pathlib.Path, output_file: pathlib.Path = None):
-        # get the book title from the file name
+        # get the book title from the file namef
         book_title = self.book_title or input_file.stem
 
         # read text from file
@@ -34,7 +53,8 @@ class Txt2Epub:
                 book_language = "en"
 
         # split text into chapters
-        chapters = text.split("\n\n\n")
+        chapters = None
+        self.split(input_file, chapters)
 
         # create new EPUB book
         book = epub.EpubBook()
@@ -83,3 +103,8 @@ class Txt2Epub:
 
         # create EPUB file
         epub.write_epub(output_file, book)
+
+'''        def is_space_separated():
+            if(self[0]=="\n" and self[len(s)-1]=="\n"):
+                return(1)
+'''
